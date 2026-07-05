@@ -1,0 +1,61 @@
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#0a1a3f" />
+<meta name="description" content="Un pequeño lugar para descansar. Un cuadro vivo hecho con cariño." />
+<title>Un lugar para descansar ❤️</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥑</text></svg>" />
+
+<!-- ============ EL CUADRO VIVO ============ -->
+<main id="painting" aria-label="Cuadro interactivo">
+  <!-- Cielo pintado (pinceladas, estrellas, luna, partículas) -->
+  <canvas id="sky"></canvas>
+
+  <!-- Capa de elementos interactivos (SVG / DOM) -->
+  <div id="scene" class="scene"></div>
+
+  <!-- Viñeta y grano artístico -->
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+</main>
+
+<!-- ============ HUD ============ -->
+<div id="hud" class="hud" aria-hidden="true">
+  <div class="counter" id="counter" title="Paltitas encontradas">
+    <span class="counter-emoji">🥑</span>
+    <span class="counter-num"><b id="found">0</b> / 10</span>
+    <div class="counter-track"><i id="counterFill"></i></div>
+  </div>
+  <button id="soundBtn" class="sound-btn" aria-label="Activar o silenciar música">
+    <svg viewBox="0 0 24 24" class="ic-on"><path d="M4 9v6h4l5 4V5L8 9H4z" /><path class="wave" d="M16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12" /></svg>
+    <svg viewBox="0 0 24 24" class="ic-off"><path d="M4 9v6h4l5 4V5L8 9H4z" /><path d="M22 9l-6 6M16 9l6 6" /></svg>
+  </button>
+</div>
+
+<!-- Pista sutil -->
+<div id="hint" class="hint" aria-hidden="true">Toca todo lo que veas… algunas paltitas se esconden 🌙</div>
+
+<!-- ============ INTRO ============ -->
+<section id="intro" class="intro">
+  <canvas id="introSky"></canvas>
+  <div class="intro-inner">
+    <p id="typed" class="typed"></p>
+    <div id="flower" class="flower-wrap" aria-hidden="true">
+      <div class="flower-glow"></div>
+      <!-- flor amarilla animada (SVG inyectado por JS) -->
+      <div id="flowerSvg" class="flower-svg" role="button" tabindex="0" aria-label="Tocar la flor para comenzar"></div>
+      <p class="flower-cta">toca la flor</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CAPA DE RECOMPENSA / CARTAS ============ -->
+<div id="overlay" class="overlay" aria-hidden="true"></div>
+
+<!-- ============ MENSAJE FLOTANTE FUGAZ ============ -->
+<div id="whisper" class="whisper" aria-live="polite"></div>
+
+<script src="script.js" defer></script>
