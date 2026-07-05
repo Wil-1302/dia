@@ -329,11 +329,17 @@ const AVO_TITLES = {
 
 // ---- elementos del paisaje ----
 const Art = {
-  cypress: () => `<svg viewBox="0 0 80 200" width="100%" height="100%">
-    <path d="M40 200 C15 150 24 90 40 6 C56 90 65 150 40 200Z" fill="#12331a"/>
-    <path d="M40 190 C22 150 30 96 40 20 C50 96 58 150 40 190Z" fill="#1c4a26"/>
-    <path d="M40 12 C34 60 33 120 38 185" stroke="#2f6b3a" stroke-width="2.5" fill="none" opacity=".6"/>
-    <path d="M40 30 C48 80 48 140 42 185" stroke="#0d2712" stroke-width="2" fill="none" opacity=".5"/>
+  // ciprés en llama, con pinceladas que suben en espiral (Van Gogh)
+  cypress: () => `<svg viewBox="0 0 90 210" width="100%" height="100%">
+    <path d="M45 208 C14 156 26 92 45 4 C64 92 76 156 45 208Z" fill="#0e2a17"/>
+    <path d="M45 200 C22 156 32 96 45 16 C58 96 68 156 45 200Z" fill="#183d22"/>
+    <g stroke-linecap="round" fill="none">
+      <path d="M45 12 C36 44 40 60 34 92 C40 120 34 150 40 190" stroke="#2f6b3a" stroke-width="2.4" opacity=".7"/>
+      <path d="M45 26 C54 56 48 74 54 104 C48 132 54 160 48 194" stroke="#0c2412" stroke-width="2.2" opacity=".7"/>
+      <path d="M40 40 C30 58 38 70 30 92" stroke="#3f7d47" stroke-width="2" opacity=".6"/>
+      <path d="M52 60 C62 80 54 96 62 120" stroke="#3f7d47" stroke-width="2" opacity=".55"/>
+      <path d="M45 150 C36 168 52 176 45 196" stroke="#245231" stroke-width="2" opacity=".6"/>
+    </g>
   </svg>`,
 
   tree: () => `<svg viewBox="0 0 140 150" width="100%" height="100%">
@@ -369,18 +375,35 @@ const Art = {
     <rect x="70" y="30" width="9" height="18" fill="#5e2a1c"/>
   </svg>`,
 
-  flowerPatch: () => {
-    let s = '<svg viewBox="0 0 160 90" width="100%" height="100%">';
-    const cols = ['#f6d365', '#ffb347', '#ffe29a', '#f4a259'];
-    for (let i = 0; i < 7; i++) {
-      const x = 16 + i * 20 + rand(-4, 4), y = 40 + rand(-6, 10), c = pick(cols), sc = rand(0.8, 1.2);
-      s += `<g transform="translate(${x} ${y}) scale(${sc})">
-        <line x1="0" y1="0" x2="0" y2="42" stroke="#2c6337" stroke-width="2.4"/>
-        <g class="petal" style="transform-origin:0 0">
-          ${[0,72,144,216,288].map(a => `<ellipse cx="0" cy="-9" rx="4.4" ry="8" fill="${c}" transform="rotate(${a})"/>`).join('')}
-        </g>
-        <circle cx="0" cy="0" r="4.2" fill="#8a5a2b"/>
-      </g>`;
+  // un girasol al estilo Van Gogh: pétalos ocres irregulares + disco de semillas
+  sunflower: (cx = 0, cy = 0, r = 16, tilt = 0) => {
+    const cols = ['#f6c445', '#f4a825', '#ffd766', '#e69113'];
+    let pet = '';
+    const N = 16;
+    for (let i = 0; i < N; i++) {
+      const a = (i / N) * 360;
+      const c = cols[i % cols.length];
+      const len = r * (1.5 + (i % 3 === 0 ? 0.28 : 0));
+      pet += `<path d="M0 ${-r * 0.7} C ${-r * 0.32} ${-r * 1.15}, ${-r * 0.18} ${-len}, 0 ${-len} C ${r * 0.18} ${-len}, ${r * 0.32} ${-r * 1.15}, 0 ${-r * 0.7} Z" fill="${c}" transform="rotate(${a})" opacity=".95"/>`;
+    }
+    // disco de semillas con puntitos
+    let seeds = '';
+    for (let i = 0; i < 26; i++) { const a = i * 137.5 * Math.PI / 180, rr = Math.sqrt(i / 26) * r * 0.62; seeds += `<circle cx="${Math.cos(a) * rr}" cy="${Math.sin(a) * rr}" r="1.1" fill="#4a2f14"/>`; }
+    return `<g transform="translate(${cx} ${cy}) rotate(${tilt})"><g class="sunhead" style="transform-origin:center">
+      ${pet}<circle r="${r * 0.72}" fill="#7a4a1e"/><circle r="${r * 0.66}" fill="#5e3813"/>${seeds}
+    </g></g>`;
+  },
+
+  // campo de girasoles (tallos + cabezas, alguno cabizbajo)
+  sunflowers: () => {
+    let s = '<svg viewBox="0 0 180 130" width="100%" height="100%">';
+    const spots = [[24, 60, 15, -6], [58, 48, 18, 4], [96, 40, 20, -3], [134, 52, 16, 8], [160, 66, 13, -8]];
+    for (const [x, y, r, tilt] of spots) {
+      const bend = tilt * 0.6;
+      s += `<path d="M${x} 130 C ${x + bend} 100, ${x - bend} ${y + r + 14}, ${x} ${y + r}" stroke="#2f5e2a" stroke-width="3.4" fill="none"/>
+            <path d="M${x} ${y + r + 26} q ${18} -6 ${26} 8 q -18 6 -26 -8Z" fill="#356b2c"/>
+            <path d="M${x} ${y + r + 40} q ${-18} -4 ${-26} 8 q 18 6 26 -8Z" fill="#2c5a25"/>`;
+      s += Art.sunflower(x, y, r, tilt);
     }
     return s + '</svg>';
   },
@@ -410,19 +433,32 @@ const Art = {
     <path class="wing-b" d="M30 18 Q44 2 56 12" stroke="#0e1a34" stroke-width="3.4" fill="none" stroke-linecap="round"/>
   </svg>`,
 
-  moon: () => `<svg viewBox="0 0 200 200" width="100%" height="100%">
+  moon: () => {
+    // corona de pinceladas girando alrededor de la luna
+    let corona = '';
+    const cols = ['#ffe9a8', '#f4c860', '#ffd77a'];
+    for (let ring = 0; ring < 3; ring++) {
+      const rr = 86 + ring * 12, n = 20 + ring * 4;
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * 360;
+        corona += `<path d="M0 ${-rr} q 7 6 0 14" stroke="${cols[ring % 3]}" stroke-width="2.4" fill="none" stroke-linecap="round" opacity="${0.32 - ring * 0.08}" transform="rotate(${a})"/>`;
+      }
+    }
+    return `<svg viewBox="-40 -40 280 280" width="100%" height="100%">
     <defs>
       <radialGradient id="mg" cx="42%" cy="40%" r="65%">
         <stop offset="0%" stop-color="#fffdf0"/><stop offset="60%" stop-color="#ffe9a8"/><stop offset="100%" stop-color="#f4c860"/>
       </radialGradient>
     </defs>
+    <g class="moon-corona" transform="translate(100 100)" style="transform-origin:100px 100px">${corona}</g>
     <circle class="moon-half moon-l" cx="100" cy="100" r="78" fill="url(#mg)"/>
     <g class="moon-face">
       <circle cx="76" cy="120" r="12" fill="#f0c862" opacity=".5"/>
       <circle cx="128" cy="86" r="8" fill="#f0c862" opacity=".45"/>
       <circle cx="120" cy="132" r="6" fill="#f0c862" opacity=".4"/>
     </g>
-  </svg>`,
+  </svg>`;
+  },
 };
 
 /* ============================================================
@@ -430,9 +466,14 @@ const Art = {
    ============================================================ */
 const Sky = (() => {
   const cv = $('#sky'); const ctx = cv.getContext('2d');
-  let W, H, dpr, t = 0, wind = 0.4;
-  let strokes = [], stars = [], parts = [], shooters = [];
+  let W, H, dpr, t = 0, wind = 0.5;
+  let strokes = [], micro = [], halos = [], parts = [], shooters = [];
   let heart = null, finale = false, spin = 0, ripples = [];
+  let vortices = [], hills = [];
+  let lakeTop = 0, lakeBottom = 0;
+  let moonX = 0.8, moonY = 0.17;
+
+  const LT = () => lakeTop, LB = () => lakeBottom;
 
   function resize() {
     dpr = Math.min(devicePixelRatio || 1, 2);
@@ -443,49 +484,113 @@ const Sky = (() => {
 
   function build() {
     const w = innerWidth, h = innerHeight, area = w * h;
-    // pinceladas del cielo (solo en la zona superior)
+    lakeTop = h * 0.62; lakeBottom = h * 0.80;
+
+    // — vórtices: los grandes remolinos de "La noche estrellada" —
+    const m = Math.min(w, h);
+    vortices = [
+      { x: w * 0.40, y: h * 0.26, r: m * 0.42, dir: 1, str: 1.5 },
+      { x: w * 0.64, y: h * 0.17, r: m * 0.30, dir: -1, str: 1.1 },
+      { x: w * 0.16, y: h * 0.14, r: m * 0.24, dir: -1, str: 0.8 },
+    ];
+
+    // — pinceladas del cielo (curvas, siguen el flujo) —
     strokes = [];
-    const n = clamp(Math.round(area / 5200), 60, reduceMotion ? 120 : 340);
+    const n = clamp(Math.round(area / 2400), 140, reduceMotion ? 240 : 680);
     for (let i = 0; i < n; i++) {
-      const y = rand(0, h * 0.72);
+      const y = rand(-6, lakeTop);
+      const near = y < h * 0.2 ? 1 : 0.7;
       strokes.push({
         x: rand(0, w), y,
-        len: rand(14, 40), ph: rand(0, Math.PI * 2), sp: rand(0.4, 1),
-        hue: rand(205, 228), light: rand(30, 62) - (y < h * 0.25 ? 0 : 8), alpha: rand(0.1, 0.32),
+        len: rand(20, 56), ph: rand(0, 6.28), sp: rand(0.5, 1.05),
+        // paleta Van Gogh: celestes/azules con toques turquesa y crema
+        hue: rand(198, 224), sat: rand(58, 86), light: rand(32, 60) * near + 9, alpha: rand(0.2, 0.52),
+        cyan: Math.random() < 0.26,
       });
     }
-    // estrellas
-    stars = [];
-    const sn = clamp(Math.round(area / 9000), 40, 160);
-    for (let i = 0; i < sn; i++) {
-      stars.push({ x: rand(0, w), y: rand(0, h * 0.62), r: rand(0.6, 2.4), ph: rand(0, 6.28), sp: rand(0.6, 2.2), gold: Math.random() < 0.28 });
+
+    // — micro estrellas (parpadeo) —
+    micro = [];
+    const sn = clamp(Math.round(area / 8000), 50, 190);
+    for (let i = 0; i < sn; i++) micro.push({ x: rand(0, w), y: rand(0, lakeTop * 0.98), r: rand(0.5, 1.9), ph: rand(0, 6.28), sp: rand(0.6, 2.4), gold: Math.random() < 0.3 });
+
+    // — estrellas grandes con corona en espiral —
+    halos = [];
+    const hn = clamp(Math.round(w / 150), 6, 15);
+    for (let i = 0; i < hn; i++) {
+      halos.push({ x: rand(w * 0.04, w * 0.96), y: rand(h * 0.05, lakeTop * 0.82), r: rand(6, 13), ph: rand(0, 6.28), sp: rand(0.5, 1.4), gold: Math.random() < 0.6, dir: Math.random() < 0.5 ? 1 : -1 });
     }
-    // partículas flotantes
+
+    // — colinas lejanas (silueta pintada) —
+    hills = [
+      { base: lakeTop, amp: h * 0.06, freq: 2.1, ph: 1.2, col: '#0c1c40' },
+      { base: lakeTop, amp: h * 0.09, freq: 1.4, ph: 3.0, col: '#122a52' },
+    ];
+
+    // — partículas flotantes —
     parts = [];
-    const pn = clamp(Math.round(area / 26000), 14, 60);
+    const pn = clamp(Math.round(area / 26000), 14, 56);
     for (let i = 0; i < pn; i++) parts.push(newPart(w, h));
   }
 
   function newPart(w, h) {
-    return { x: rand(0, w), y: rand(0, h), r: rand(0.6, 2.2), vy: rand(-0.15, -0.5), ph: rand(0, 6.28), a: rand(0.15, 0.5) };
+    return { x: rand(0, w), y: rand(0, lakeTop), r: rand(0.6, 2.2), vy: rand(-0.15, -0.5), ph: rand(0, 6.28), a: rand(0.15, 0.5) };
   }
 
+  // campo de flujo con remolinos → pinceladas en espiral
   function flowAngle(x, y, tt) {
-    return Math.sin(x * 0.0026 + tt * 0.15) * 1.6 + Math.cos(y * 0.0032 - tt * 0.12) * 1.5 + Math.sin((x + y) * 0.0015 + tt * 0.08);
+    let ang = Math.sin(x * 0.0021 + tt * 0.12) * 1.1 + Math.cos(y * 0.0028 - tt * 0.1) * 1.0;
+    for (const v of vortices) {
+      const dx = x - v.x, dy = y - v.y, d = Math.hypot(dx, dy);
+      const infl = v.str * Math.exp(-d / v.r);
+      ang += (Math.atan2(dy, dx) + Math.PI / 2 * v.dir) * infl;
+    }
+    return ang;
   }
 
-  // API pública para efectos disparados
+  // pincelada curva (tipo coma)
+  function brush(x, y, ang, len, color, alpha, width) {
+    const dx = Math.cos(ang), dy = Math.sin(ang);
+    ctx.strokeStyle = color; ctx.globalAlpha = alpha; ctx.lineWidth = width;
+    ctx.beginPath();
+    ctx.moveTo(x - dx * len * 0.5, y - dy * len * 0.5);
+    ctx.quadraticCurveTo(x - dy * len * 0.32, y + dx * len * 0.32, x + dx * len * 0.5, y + dy * len * 0.5);
+    ctx.stroke();
+  }
+
+  // estrella grande con glow + corona de pinceladas girando
+  function drawHalo(s, tw, alphaMul = 1) {
+    const c = s.gold ? '255,214,92' : '176,214,255';
+    const R = s.r * (0.9 + tw * 0.4);
+    const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, R * 3.4);
+    g.addColorStop(0, `rgba(255,248,220,${0.95 * tw * alphaMul})`);
+    g.addColorStop(0.28, `rgba(${c},${0.5 * tw * alphaMul})`);
+    g.addColorStop(1, `rgba(${c},0)`);
+    ctx.globalAlpha = 1; ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(s.x, s.y, R * 3.4, 0, 6.28); ctx.fill();
+    ctx.fillStyle = `rgba(255,251,235,${0.95 * alphaMul})`;
+    ctx.beginPath(); ctx.arc(s.x, s.y, R * 0.5, 0, 6.28); ctx.fill();
+    for (let ring = 1; ring <= 2; ring++) {
+      const rr = R * (0.9 + ring * 0.85), dn = 8 + ring * 4;
+      for (let i = 0; i < dn; i++) {
+        const a = (i / dn) * 6.28 + t * (0.4 * s.dir) * (ring % 2 ? 1 : -1) + s.ph;
+        brush(s.x + Math.cos(a) * rr, s.y + Math.sin(a) * rr, a + Math.PI / 2 * s.dir, R * 0.7, `rgba(${c},${0.5 * tw * alphaMul})`, 0.5 * tw * alphaMul, 1.7);
+      }
+    }
+  }
+
+  // ---- API pública ----
   function shootingStar() {
     const w = innerWidth;
-    shooters.push({ x: rand(w * 0.1, w * 0.9), y: rand(20, innerHeight * 0.3), vx: rand(-9, -14), vy: rand(5, 9), life: 1 });
+    shooters.push({ x: rand(w * 0.1, w * 0.9), y: rand(20, lakeTop * 0.4), vx: rand(-9, -14), vy: rand(5, 9), life: 1 });
   }
   function ripple(x, y) { ripples.push({ x, y, r: 6, a: 0.8 }); }
   function setWind(v) { wind = v; }
+  function setMoon(x, y) { moonX = x; moonY = y; }
   function starRain() { for (let i = 0; i < 3; i++) setTimeout(shootingStar, i * 180); }
 
-  // corazón de estrellas (momento 5)
   function heartConstellation(cb) {
-    const w = innerWidth, h = innerHeight, cx = w / 2, cy = h * 0.34, s = Math.min(w, h) * 0.16;
+    const w = innerWidth, h = innerHeight, cx = w / 2, cy = h * 0.30, s = Math.min(w, h) * 0.16;
     const pts = [];
     for (let i = 0; i < 22; i++) {
       const a = (i / 22) * Math.PI * 2;
@@ -497,51 +602,146 @@ const Sky = (() => {
   }
   function startFinale() { finale = true; }
 
+  // ---- terreno y lago ----
+  function hillTopY(hl, x, w) {
+    return hl.base - hl.amp * (0.5 + 0.5 * Math.sin(x / w * Math.PI * hl.freq + hl.ph))
+      - hl.amp * 0.25 * Math.sin(x / w * Math.PI * hl.freq * 3 + hl.ph * 2);
+  }
+
+  function drawTerrain() {
+    const w = innerWidth, h = innerHeight;
+    ctx.globalAlpha = 1;
+
+    // colinas lejanas
+    for (const hl of hills) {
+      ctx.fillStyle = hl.col; ctx.beginPath(); ctx.moveTo(0, lakeTop);
+      for (let x = 0; x <= w; x += 12) ctx.lineTo(x, hillTopY(hl, x, w));
+      ctx.lineTo(w, lakeTop); ctx.closePath(); ctx.fill();
+    }
+
+    // agua del lago
+    const wg = ctx.createLinearGradient(0, lakeTop, 0, lakeBottom);
+    wg.addColorStop(0, '#123457'); wg.addColorStop(0.5, '#0d2748'); wg.addColorStop(1, '#071a34');
+    ctx.fillStyle = wg; ctx.fillRect(0, lakeTop, w, lakeBottom - lakeTop);
+
+    drawReflections();
+
+    // brillos horizontales del agua
+    ctx.globalAlpha = 1;
+    for (let yy = lakeTop + 6; yy < lakeBottom; yy += 13) {
+      const a = 0.05 + 0.03 * Math.sin(t * 1.5 + yy);
+      ctx.strokeStyle = `rgba(150,195,245,${a})`; ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      for (let x = 0; x <= w; x += 20) ctx.lineTo(x, yy + Math.sin(t * 1.6 + x * 0.04 + yy) * 1.6);
+      ctx.stroke();
+    }
+
+    // orilla en primer plano (zona oscura pintada)
+    const fg = ctx.createLinearGradient(0, lakeBottom - 10, 0, h);
+    fg.addColorStop(0, '#0b2a1b'); fg.addColorStop(1, '#04120b');
+    ctx.fillStyle = fg; ctx.beginPath(); ctx.moveTo(0, h);
+    for (let x = 0; x <= w; x += 14) {
+      const y = lakeBottom + Math.sin(x / w * Math.PI * 3 + 0.5) * 8 + Math.sin(x * 0.03) * 5;
+      ctx.lineTo(x, y);
+    }
+    ctx.lineTo(w, h); ctx.closePath(); ctx.fill();
+    // reflejo de luna en la orilla húmeda
+    ctx.strokeStyle = 'rgba(255,224,140,0.10)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0, lakeBottom + 2);
+    for (let x = 0; x <= w; x += 16) ctx.lineTo(x, lakeBottom + 2 + Math.sin(t + x * 0.05) * 1.5);
+    ctx.stroke();
+  }
+
+  // reflejo de estrellas y luna en el lago
+  function drawReflections() {
+    const w = innerWidth, depth = lakeBottom - lakeTop, boost = finale ? 2 : 1;
+    // estrellas reflejadas (comprimidas + onduladas)
+    const all = micro.concat(halos.map(hs => ({ x: hs.x, y: hs.y, r: hs.r * 0.6, gold: hs.gold, big: true })));
+    for (const s of all) {
+      if (s.y > lakeTop) continue;
+      const ry = lakeTop + (lakeTop - s.y) * 0.34;
+      if (ry > lakeBottom) continue;
+      const frac = (ry - lakeTop) / depth;
+      const wob = Math.sin(t * 2 + ry * 0.09) * (2 + frac * 10);
+      const tw = 0.4 + 0.6 * Math.abs(Math.sin(t * 1.6 + s.x));
+      const c = s.gold ? '255,214,110' : '190,220,255';
+      const a = (s.big ? 0.5 : 0.32) * tw * boost * (1 - frac * 0.6);
+      ctx.globalAlpha = 1; ctx.fillStyle = `rgba(${c},${a})`;
+      ctx.beginPath(); ctx.ellipse(s.x + wob, ry, (s.r + (s.big ? 1.4 : 0)) * 1.1, (s.r + (s.big ? 1.4 : 0)) * 0.7, 0, 0, 6.28); ctx.fill();
+    }
+    // columna reflejada de la luna
+    const mx = moonX * w;
+    for (let yy = lakeTop; yy < lakeBottom; yy += 5) {
+      const f = (yy - lakeTop) / depth;
+      const off = Math.sin(t * 2.4 + yy * 0.09) * (5 + f * 22);
+      const wdt = 30 * (1 - f * 0.45);
+      const a = 0.12 * boost * (1 - f);
+      ctx.fillStyle = `rgba(255,222,128,${a})`;
+      ctx.fillRect(mx + off - wdt / 2, yy, wdt, 3);
+    }
+  }
+
   function frame() {
     t += reduceMotion ? 0.006 : 0.014;
     ctx.clearRect(0, 0, W, H);
     ctx.save(); ctx.scale(dpr, dpr);
     const w = innerWidth, h = innerHeight;
-
-    if (finale) { spin += 0.0016; ctx.translate(w / 2, h * 0.32); ctx.rotate(Math.sin(spin) * 0.06 + spin * 0.4); ctx.translate(-w / 2, -h * 0.32); }
-
-    // — pinceladas —
     ctx.lineCap = 'round';
+
+    // ===== CIELO (con giro en el final) =====
+    ctx.save();
+    if (finale) { spin += 0.0016; ctx.translate(w / 2, lakeTop * 0.45); ctx.rotate(Math.sin(spin) * 0.05 + spin * 0.35); ctx.translate(-w / 2, -lakeTop * 0.45); }
+
+    // pinceladas
     for (const s of strokes) {
       const ang = flowAngle(s.x, s.y, t) * s.sp;
       const a = s.alpha * (0.7 + 0.3 * Math.sin(t * 0.8 + s.ph));
-      ctx.strokeStyle = `hsla(${s.hue}, 70%, ${s.light}%, ${a})`;
-      ctx.lineWidth = 2.4;
-      ctx.beginPath();
-      const dx = Math.cos(ang), dy = Math.sin(ang), L = s.len;
-      ctx.moveTo(s.x - dx * L * 0.5, s.y - dy * L * 0.5);
-      ctx.quadraticCurveTo(s.x, s.y - L * 0.4, s.x + dx * L * 0.5, s.y + dy * L * 0.5);
-      ctx.stroke();
+      const col = s.cyan ? `hsla(190, 80%, ${s.light + 16}%, ${a})` : `hsla(${s.hue}, ${s.sat}%, ${s.light}%, ${a})`;
+      brush(s.x, s.y, ang, s.len, col, a, s.cyan ? 3.4 : 2.9);
     }
 
-    // — estrellas —
-    for (const st of stars) {
+    // micro estrellas
+    for (const st of micro) {
       const tw = 0.4 + 0.6 * Math.abs(Math.sin(t * st.sp + st.ph));
       const R = st.r * (0.8 + tw * 0.6);
-      const col = st.gold ? '255,236,150' : '235,244,255';
-      ctx.beginPath(); ctx.arc(st.x, st.y, R, 0, 6.28);
+      const col = st.gold ? '255,236,150' : '225,240,255';
+      ctx.globalAlpha = 1; ctx.beginPath(); ctx.arc(st.x, st.y, R, 0, 6.28);
       ctx.fillStyle = `rgba(${col},${0.5 + tw * 0.5})`; ctx.fill();
-      if (R > 1.6) {
-        ctx.strokeStyle = `rgba(${col},${tw * 0.5})`; ctx.lineWidth = 0.8;
-        ctx.beginPath(); ctx.moveTo(st.x - R * 2.4, st.y); ctx.lineTo(st.x + R * 2.4, st.y);
-        ctx.moveTo(st.x, st.y - R * 2.4); ctx.lineTo(st.x, st.y + R * 2.4); ctx.stroke();
-      }
     }
 
-    // — partículas / viento —
+    // estrellas grandes con corona
+    for (const s of halos) drawHalo(s, 0.55 + 0.45 * Math.abs(Math.sin(t * s.sp + s.ph)));
+
+    ctx.globalAlpha = 1;
+    // partículas
     for (const p of parts) {
       p.y += p.vy; p.x += Math.sin(t + p.ph) * 0.3 + wind * 0.4;
-      if (p.y < -6 || p.x > w + 6 || p.x < -6) { Object.assign(p, newPart(w, h), { y: h + 6 }); }
+      if (p.y < -6 || p.x > w + 6 || p.x < -6) { Object.assign(p, newPart(w, h), { y: lakeTop }); }
       ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.28);
       ctx.fillStyle = `rgba(255,244,201,${p.a * (0.6 + 0.4 * Math.sin(t + p.ph))})`; ctx.fill();
     }
 
-    // — estrellas fugaces —
+    // corazón de estrellas (momento 5)
+    if (heart) {
+      let done = true;
+      for (const p of heart.pts) {
+        const age = t - p.born; if (age < 0) { done = false; continue; }
+        const tw = 0.5 + 0.5 * Math.sin(t * 3 + p.x);
+        const R = clamp(age * 6, 0, 3.6) * (0.8 + tw * 0.4);
+        ctx.beginPath(); ctx.arc(p.x, p.y, R, 0, 6.28);
+        ctx.fillStyle = `rgba(255,180,200,${clamp(age, 0, 1)})`; ctx.shadowBlur = 14; ctx.shadowColor = '#ff9db0'; ctx.fill();
+      }
+      ctx.shadowBlur = 0;
+      if (done && !heart.done && t - heart.start > 2.4) { heart.done = true; heart.cb && heart.cb(); }
+      if (t - heart.start > 9) heart = null;
+    }
+    ctx.restore(); // fin giro del cielo
+
+    // ===== TERRENO + LAGO (reflejos) =====
+    drawTerrain();
+
+    // ===== estrellas fugaces (por encima de todo) =====
+    ctx.globalAlpha = 1;
     for (let i = shooters.length - 1; i >= 0; i--) {
       const s = shooters[i]; s.x += s.vx; s.y += s.vy; s.life -= 0.012;
       const g = ctx.createLinearGradient(s.x, s.y, s.x - s.vx * 6, s.y - s.vy * 6);
@@ -552,7 +752,7 @@ const Sky = (() => {
       if (s.life <= 0) shooters.splice(i, 1);
     }
 
-    // — ondas al tocar el cielo —
+    // ondas al tocar el cielo
     for (let i = ripples.length - 1; i >= 0; i--) {
       const r = ripples[i]; r.r += 2.4; r.a -= 0.02;
       ctx.strokeStyle = `rgba(255,244,201,${r.a})`; ctx.lineWidth = 1.4;
@@ -560,42 +760,20 @@ const Sky = (() => {
       if (r.a <= 0) ripples.splice(i, 1);
     }
 
-    // — corazón de estrellas —
-    if (heart) {
-      ctx.save();
-      let all = true;
-      for (const p of heart.pts) {
-        const age = t - p.born; if (age < 0) { all = false; continue; }
-        const tw = 0.5 + 0.5 * Math.sin(t * 3 + p.x);
-        const R = clamp(age * 6, 0, 3.4) * (0.8 + tw * 0.4);
-        ctx.beginPath(); ctx.arc(p.x, p.y, R, 0, 6.28);
-        ctx.fillStyle = `rgba(255,180,200,${clamp(age, 0, 1)})`; ctx.shadowBlur = 14; ctx.shadowColor = '#ff9db0'; ctx.fill();
-      }
-      ctx.restore();
-      if (all && !heart.done && t - heart.start > 2.4) { heart.done = true; heart.cb && heart.cb(); }
-      if (t - heart.start > 9) heart = null;
-    }
-
-    // aire caliente cerca de la luna (halo dorado extra)
     ctx.restore();
-
-    // fugaces esporádicas
     if (!reduceMotion && Math.random() < (finale ? 0.08 : 0.004)) shootingStar();
-
     requestAnimationFrame(frame);
   }
 
-  // click en cielo → toque de estrella
   cv.addEventListener('pointerdown', (e) => {
-    ripple(e.clientX, e.clientY);
-    Audio.sfx('twinkle');
+    ripple(e.clientX, e.clientY); Audio.sfx('twinkle');
     if (Math.random() < 0.4) shootingStar();
   });
 
   addEventListener('resize', () => { clearTimeout(Sky._rt); Sky._rt = setTimeout(resize, 150); });
   resize(); requestAnimationFrame(frame);
 
-  return { shootingStar, heartConstellation, startFinale, setWind, ripple, starRain };
+  return { shootingStar, heartConstellation, startFinale, setWind, setMoon, ripple, starRain, lakeTop: LT, lakeBottom: LB };
 })();
 
 /* ============================================================
@@ -661,22 +839,15 @@ async function typeWriter(el, text) {
   await sleep(500); cur.remove();
 }
 
+// flor de la intro: un girasol Van Gogh grande, con tallo y hojas
 function flowerSVG() {
-  const petals = [];
-  for (let i = 0; i < 8; i++) {
-    petals.push(`<ellipse cx="0" cy="-30" rx="13" ry="28" fill="url(#pg)" transform="rotate(${i * 45})" stroke="#e0a93b" stroke-width="1.5"/>`);
-  }
-  return `<svg viewBox="0 0 140 180" width="100%" height="100%">
-    <defs>
-      <radialGradient id="pg" cx="50%" cy="30%" r="70%"><stop offset="0%" stop-color="#fff3c4"/><stop offset="70%" stop-color="#f6d365"/><stop offset="100%" stop-color="#f0b429"/></radialGradient>
-      <radialGradient id="cg" cx="40%" cy="40%" r="70%"><stop offset="0%" stop-color="#a9773f"/><stop offset="100%" stop-color="#5e3d1c"/></radialGradient>
-    </defs>
-    <path d="M70 120 C60 150 62 176 70 178 C78 176 80 150 70 120Z" fill="#2c6337"/>
-    <path d="M66 150 q-26 -6 -30 -24 q22 -2 30 18Z" fill="#357a42"/>
-    <path d="M74 140 q26 -8 30 -26 q-22 -2 -30 20Z" fill="#357a42"/>
-    <g class="fpetals" style="transform-origin:70px 70px;transform:translateY(0)"><g transform="translate(70 70)">${petals.join('')}</g></g>
-    <circle cx="70" cy="70" r="16" fill="url(#cg)"/>
-    <g fill="#3a2410"><circle cx="64" cy="66" r="2"/><circle cx="74" cy="64" r="2"/><circle cx="70" cy="74" r="2"/><circle cx="62" cy="74" r="1.6"/><circle cx="78" cy="72" r="1.6"/></g>
+  return `<svg viewBox="0 0 160 200" width="100%" height="100%">
+    <path d="M80 200 C70 160 74 120 80 76 C86 120 90 160 80 200Z" fill="#2f5e2a"/>
+    <path d="M78 150 q-32 -8 -38 -30 q28 -2 38 22Z" fill="#357a42"/>
+    <path d="M84 130 q34 -10 40 -32 q-28 -2 -40 26Z" fill="#357a42"/>
+    <g class="fpetals" style="transform-origin:80px 62px">
+      <g transform="translate(80 62)">${Art.sunflower(0, 0, 34, 0)}</g>
+    </g>
   </svg>`;
 }
 
@@ -701,7 +872,7 @@ function makeEl({ html, x, y, w, cls = '', z = 3 }) {
 
 // paltita oculta ligada a un "host"
 const Game = {
-  found: 0, total: 10, seq: [], collected: [],
+  found: 0, total: 10, seq: [], collected: [], avos: [],
 };
 
 function placeAvocado(type, x, y, w) {
@@ -716,6 +887,7 @@ function placeAvocado(type, x, y, w) {
   pos.appendChild(a);
   scene.appendChild(pos);
   a.addEventListener('pointerdown', (e) => { e.stopPropagation(); collectAvocado(a); });
+  Game.avos.push(a);
   return a;
 }
 
@@ -732,71 +904,83 @@ let hintShownFor = new Set();
 
 function buildScene() {
   scene.innerHTML = '';
+  injectPaintFilter();
+  const vg = reduceMotion ? '' : 'vg';           // textura pictórica (Van Gogh)
+  Sky.setMoon(0.80, 0.16);                        // para el reflejo en el lago
 
-  /* --- colinas / montañas de fondo (parallax) --- */
-  makeEl({ html: Art.hill(1400, '#132a55', '#0e2148'), x: 50, y: 74, w: '120%', z: 1, cls: 'mountains' });
-  makeEl({ html: Art.hill(1400, '#123a2a', '#0c2a1e'), x: 50, y: 86, w: '130%', z: 2 });
-
-  /* --- LUNA (host de la paltita "moon", y se abre en momento 7) --- */
-  const moon = makeEl({ html: `<div class="moon-glow"></div>` + Art.moon(), x: 80, y: 22, w: 'clamp(120px, 22vw, 210px)', z: 2, cls: 'moon-el bob' });
+  /* --- LUNA (host "moon"; se abre en el momento 7) --- */
+  const moon = makeEl({ html: `<div class="moon-glow"></div>` + Art.moon(), x: 80, y: 16, w: 'clamp(130px, 24vw, 230px)', z: 2, cls: 'moon-el bob' });
   moon.id = 'moonEl';
-  const avoMoon = placeAvocado('moon', 88, 30, 'clamp(40px,8vw,66px)');
+  const avoMoon = placeAvocado('moon', 88, 26, 'clamp(40px,8vw,66px)');
   hostReveal(moon, avoMoon, () => { moon.classList.add('nudged'); pulseMoon(moon); });
 
-  /* --- estrella brillante (host "star") --- */
-  const bigStar = makeEl({ html: bigStarSVG(), x: 24, y: 20, w: 'clamp(40px,8vw,70px)', z: 2, cls: 'bob' });
-  const avoStar = placeAvocado('star', 30, 27, 'clamp(40px,8vw,64px)');
+  /* --- estrella grande (host "star") --- */
+  const bigStar = makeEl({ html: bigStarSVG(), x: 20, y: 14, w: 'clamp(42px,8vw,74px)', z: 2, cls: 'bob' });
+  const avoStar = placeAvocado('star', 27, 22, 'clamp(40px,8vw,64px)');
   hostReveal(bigStar, avoStar, () => { bigStar.classList.add('nudged'); Sky.shootingStar(); });
 
-  /* --- nubes (2 hosts + decorativas a la deriva) --- */
-  const cloud1 = makeEl({ html: Art.cloud(), x: 40, y: 26, w: 'clamp(150px,30vw,280px)', z: 3, cls: '' });
-  const avoHappy = placeAvocado('happy', 40, 38, 'clamp(44px,9vw,70px)');
+  /* --- nubes (2 hosts + decorativas) --- */
+  const cloud1 = makeEl({ html: Art.cloud(), x: 42, y: 24, w: 'clamp(150px,30vw,280px)', z: 3 });
+  const avoHappy = placeAvocado('happy', 42, 35, 'clamp(44px,9vw,70px)');
   hostReveal(cloud1, avoHappy, () => { cloud1.style.transition = 'transform 1.2s var(--ease)'; cloud1.style.transform = 'translateX(-70px)'; whisper(); });
 
-  const cloud2 = makeEl({ html: Art.cloud(), x: 62, y: 40, w: 'clamp(130px,26vw,240px)', z: 3 });
-  const avoSurprise = placeAvocado('surprise', 62, 52, 'clamp(42px,9vw,66px)');
+  const cloud2 = makeEl({ html: Art.cloud(), x: 64, y: 33, w: 'clamp(130px,26vw,240px)', z: 3 });
+  const avoSurprise = placeAvocado('surprise', 64, 45, 'clamp(42px,9vw,66px)');
   hostReveal(cloud2, avoSurprise, () => { cloud2.style.transition = 'transform 1.2s var(--ease)'; cloud2.style.transform = 'translateX(60px)'; });
 
-  // nubes decorativas a la deriva
   addDriftCloud(18, '200px', 62);
-  addDriftCloud(48, '150px', 80);
+  addDriftCloud(46, '150px', 80);
 
-  /* --- ciprés (host "read") --- */
-  const cyp = makeEl({ html: Art.cypress(), x: 12, y: 66, w: 'clamp(70px,12vw,120px)', z: 4, cls: 'sway' });
-  const avoRead = placeAvocado('read', 17, 78, 'clamp(46px,9vw,72px)');
-  hostReveal(cyp, avoRead, () => { cyp.classList.add('nudged'); });
-
-  /* --- árbol frondoso (host "surprise" ya usado) → arbusto derecha host "shy" --- */
-  const tree = makeEl({ html: Art.tree(), x: 84, y: 70, w: 'clamp(120px,22vw,220px)', z: 4, cls: 'sway2' });
-  const avoHat = placeAvocado('hat', 84, 62, 'clamp(44px,9vw,68px)'); // gorrito entre las copas
-  hostReveal(tree, avoHat, () => { tree.classList.add('nudged'); shakeLeaves(tree); });
-
-  /* --- casitas (host "coffee": se enciende la ventana) --- */
-  const house = makeEl({ html: Art.house(), x: 50, y: 78, w: 'clamp(90px,16vw,150px)', z: 5, cls: '' });
-  const avoCoffee = placeAvocado('coffee', 50, 70, 'clamp(42px,8vw,64px)');
+  /* --- casita junto al lago (host "coffee": enciende la ventana) --- */
+  const house = makeEl({ html: Art.house(), x: 30, y: 55, w: 'clamp(78px,14vw,130px)', z: 4, cls: vg });
+  const avoCoffee = placeAvocado('coffee', 30, 48, 'clamp(40px,8vw,60px)');
   hostReveal(house, avoCoffee, () => { house.classList.add('nudged'); $$('.win', house).forEach(w => w.style.filter = 'drop-shadow(0 0 12px #f6d365)'); });
 
-  /* --- arbusto izquierda (host "scarf") --- */
-  const bush = makeEl({ html: Art.bush(), x: 30, y: 88, w: 'clamp(110px,20vw,190px)', z: 6, cls: '' });
-  const avoScarf = placeAvocado('scarf', 30, 80, 'clamp(44px,9vw,68px)');
+  /* --- ciprés en llama (host "read") --- */
+  const cyp = makeEl({ html: Art.cypress(), x: 9, y: 62, w: 'clamp(80px,14vw,140px)', z: 7, cls: 'sway ' + vg });
+  const avoRead = placeAvocado('read', 15, 72, 'clamp(46px,9vw,72px)');
+  hostReveal(cyp, avoRead, () => { cyp.classList.add('nudged'); });
+
+  /* --- árbol frondoso (host "hat") --- */
+  const tree = makeEl({ html: Art.tree(), x: 89, y: 68, w: 'clamp(120px,22vw,210px)', z: 7, cls: 'sway2 ' + vg });
+  const avoHat = placeAvocado('hat', 89, 58, 'clamp(44px,9vw,68px)');
+  hostReveal(tree, avoHat, () => { tree.classList.add('nudged'); shakeLeaves(tree); });
+
+  /* --- girasoles (host "shy": las cabezas giran) --- */
+  const sunflowers = makeEl({ html: Art.sunflowers(), x: 20, y: 88, w: 'clamp(130px,24vw,220px)', z: 8, cls: vg });
+  const avoShy = placeAvocado('shy', 20, 79, 'clamp(42px,8vw,64px)');
+  hostReveal(sunflowers, avoShy, () => { sunflowers.classList.add('nudged'); $$('.sunhead', sunflowers).forEach(s => s.animate([{ transform: 'rotate(0)' }, { transform: 'rotate(360deg)' }], { duration: 1400, easing: 'ease-in-out' })); });
+  // girasoles decorativos a la derecha
+  makeEl({ html: Art.sunflowers(), x: 82, y: 90, w: 'clamp(120px,22vw,200px)', z: 8, cls: vg });
+
+  /* --- arbusto (host "scarf") --- */
+  const bush = makeEl({ html: Art.bush(), x: 48, y: 90, w: 'clamp(110px,20vw,190px)', z: 8, cls: vg });
+  const avoScarf = placeAvocado('scarf', 48, 82, 'clamp(44px,9vw,68px)');
   hostReveal(bush, avoScarf, () => { bush.classList.add('nudged'); });
 
   /* --- piedra (host "sleep": se levanta) --- */
-  const rock = makeEl({ html: Art.rock(), x: 68, y: 90, w: 'clamp(90px,16vw,150px)', z: 6, cls: '' });
-  const avoSleep = placeAvocado('sleep', 68, 84, 'clamp(46px,9vw,70px)');
+  const rock = makeEl({ html: Art.rock(), x: 66, y: 92, w: 'clamp(90px,16vw,150px)', z: 8, cls: vg });
+  const avoSleep = placeAvocado('sleep', 66, 85, 'clamp(46px,9vw,70px)');
   hostReveal(rock, avoSleep, () => { rock.classList.add('lifted'); });
 
-  /* --- flores (host "shy"): se abren --- */
-  const flowers = makeEl({ html: Art.flowerPatch(), x: 15, y: 92, w: 'clamp(120px,22vw,200px)', z: 6, cls: '' });
-  const avoShy = placeAvocado('shy', 15, 84, 'clamp(42px,8vw,64px)');
-  hostReveal(flowers, avoShy, () => { flowers.classList.add('opened'); });
-
   /* --- mariposas y pájaros decorativos --- */
-  addButterfly(35, 46); addButterfly(70, 30);
+  addButterfly(35, 44); addButterfly(72, 28);
   addBirds();
 
-  // parallax con el puntero
   enableParallax();
+}
+
+// filtro SVG que da textura de pincel (Van Gogh) a los elementos del paisaje
+function injectPaintFilter() {
+  if (reduceMotion || document.getElementById('vgpaint')) return;
+  const svg = document.createElementNS(SVGNS, 'svg');
+  svg.setAttribute('width', '0'); svg.setAttribute('height', '0');
+  svg.style.cssText = 'position:absolute;width:0;height:0';
+  svg.innerHTML = `<defs><filter id="vgpaint" x="-12%" y="-12%" width="124%" height="124%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.013 0.021" numOctaves="2" seed="7" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="6" xChannelSelector="R" yChannelSelector="G"/>
+  </filter></defs>`;
+  document.body.appendChild(svg);
 }
 
 // vincula un host: primer toque revela la paltita
@@ -910,6 +1094,7 @@ function nextGif() { const g = GIFS[gifIdx % GIFS.length]; gifIdx++; return g; }
 
 function collectAvocado(a) {
   if (a.dataset.collected) return;
+  a.classList.remove('teasing');
   if (!a.dataset.revealed) revealAvocado(a); // por si acaso
   a.dataset.collected = '1';
   a.classList.remove('peek'); a.classList.add('found');
@@ -917,6 +1102,7 @@ function collectAvocado(a) {
   spawnSparkles(a);
   Game.found++;
   Game.collected.push(a.dataset.type);
+  Hints.mark();               // reinicia el reloj de pistas
   updateCounter();
 
   // vuela hacia el contador y desaparece
@@ -1063,6 +1249,7 @@ function showFloatingLetter(kicker, paras, sign, cb) {
    9 · FINAL
    ============================================================ */
 async function momentFinale() {
+  Hints.stop();
   // flash + el cuadro cobra vida
   const flash = document.createElement('div'); flash.className = 'final-flash go'; document.body.appendChild(flash);
   Sky.startFinale(); Sky.starRain(); Sky.setWind(1.2);
@@ -1104,16 +1291,76 @@ async function momentFinale() {
 }
 
 /* ============================================================
+   9.5 · PISTAS  (una paltita se asoma a mirar cada cierto tiempo)
+   ============================================================ */
+const Hints = (() => {
+  let last = 0, timer = null, active = false;
+  function mark() { last = Date.now(); }
+  function hidden() { return Game.avos.filter(a => !a.dataset.revealed && !a.dataset.collected); }
+  function tease() {
+    const pool = hidden(); if (!pool.length) return;
+    const a = pick(pool);
+    a.classList.add('teasing');
+    // bracito que saluda asomando por el borde
+    const arm = document.createElementNS(SVGNS, 'svg');
+    arm.setAttribute('viewBox', '0 0 30 30'); arm.setAttribute('class', 'tease-arm');
+    arm.innerHTML = `<path d="M8 26 C4 16 8 6 16 6 C22 6 24 12 22 16" stroke="#5f8f37" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="22" cy="15" r="5" fill="#6f9e3f"/>`;
+    arm.style.left = '62%'; arm.style.top = '6%';
+    a.parentElement.appendChild(arm);
+    Audio.sfx('soft');
+    setTimeout(() => { a.classList.remove('teasing'); arm.remove(); }, 2100);
+    mark();
+  }
+  function loop() {
+    if (!active) return;
+    const overlayOpen = $('#overlay').classList.contains('show');
+    const stuck = Date.now() - last;
+    // si lleva un rato sin encontrar nada y no hay carta abierta → pista
+    if (!overlayOpen && stuck > 13000 && hidden().length) tease();
+  }
+  return {
+    mark,
+    start() { active = true; mark(); clearInterval(timer); timer = setInterval(loop, 4000); },
+    stop() { active = false; clearInterval(timer); },
+  };
+})();
+
+/* ============================================================
+   9.6 · INSTRUCCIONES  (cómo explorar el cuadro)
+   ============================================================ */
+function showInstructions(cb) {
+  blurPainting(true);
+  const ov = $('#overlay');
+  ov.innerHTML = `<div class="card letter" role="dialog" aria-label="Cómo jugar">
+      <p class="kicker">un pequeño cuadro para ti</p>
+      <p class="title" style="font-family:var(--serif);font-size:clamp(1.5rem,5.5vw,2rem);color:var(--gold);margin-bottom:14px">Cómo explorar</p>
+      <ul class="howto">
+        <li><span class="ic">👆</span><span>Toca <b>todo</b> lo que veas: nubes, árboles, girasoles, la luna, las estrellas… todo cobra vida.</span></li>
+        <li><span class="ic">🥑</span><span>Hay <b>10 paltitas escondidas</b> detrás de las cosas. Mueve o toca los elementos para descubrirlas.</span></li>
+        <li><span class="ic">👋</span><span>Si te atascas, una paltita <b>asomará a saludarte</b> para darte una pistita.</span></li>
+        <li><span class="ic">🎵</span><span>Arriba a la derecha puedes <b>activar o silenciar</b> la música cuando quieras.</span></li>
+      </ul>
+      <button class="close">entrar al cuadro ✨</button>
+    </div>`;
+  ov.classList.add('show');
+  ov.querySelector('.close').onclick = () => closeOverlay(cb);
+}
+
+/* ============================================================
    10 · ARRANQUE
    ============================================================ */
 function startExperience() {
   Intro.stop();
   $('#intro').classList.add('gone');
   buildScene();
-  $('#hud').classList.add('show'); $('#hud').setAttribute('aria-hidden', 'false');
-  setTimeout(() => { $('#hint').classList.add('show'); $('#hint').setAttribute('aria-hidden', 'false'); }, 1400);
-  setTimeout(() => $('#hint').classList.remove('show'), 9000);
   Sky.setWind(0.5);
+  // primero: breve instrucción de cómo jugar
+  setTimeout(() => showInstructions(() => {
+    $('#hud').classList.add('show'); $('#hud').setAttribute('aria-hidden', 'false');
+    setTimeout(() => { $('#hint').classList.add('show'); $('#hint').setAttribute('aria-hidden', 'false'); }, 800);
+    setTimeout(() => $('#hint').classList.remove('show'), 9000);
+    Hints.start();
+  }), 900);
 }
 
 // botón de sonido
